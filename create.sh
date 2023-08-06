@@ -631,6 +631,9 @@ __EOF__
         fatalerror
     fi
 
+    # We want to get the IP without the netmask, if present
+    connect_ip=$(echo $opt_ip | sed -E 's^([0-9.]+)(/.+)?$^\1^')
+
     # Write the startup script
     cat > "vms/$opt_hostname/start-$opt_hostname.sh" << __EOF__
 #!/bin/sh
@@ -658,6 +661,8 @@ qemu-system-x86_64 \\
     -smbios type=1,serial=$uuid \\
     -smbios type=2,serial=$uuid \\
     -smbios type=1,uuid=$uuid
+
+printf "VM starting. SSH to it at %s.\n" "$connect_ip"
 __EOF__
 
     chmod +x "vms/$opt_hostname/start-$opt_hostname.sh"
