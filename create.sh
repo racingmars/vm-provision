@@ -173,7 +173,7 @@ selectdistro() {
         ;;
     i)  # Rocky Linux 9
         VM_PROVISION_BASEIMG=Rocky-9-GenericCloud.latest.x86_64.qcow2
-        VM_PROVISION_BASEIMG_URL=http://dl.rockylinux.org/pub/rocky/9/images/x86_64/$VM_PROVISION_BASEIMG
+        VM_PROVISION_BASEIMG_URL=http://dl.rockylinux.org/stg/rocky/9/images/x86_64/$VM_PROVISION_BASEIMG
         ;;
     j)  # Ubuntu 20.04 LTS
         VM_PROVISION_BASEIMG=focal-server-cloudimg-amd64.img
