@@ -128,12 +128,11 @@ selectdistro() {
         d 'Debian 11' \
         e 'Debian 12' \
         f 'openSUSE Leap 15.5' \
-        g 'openSUSE Tumbleweed' \
-        h 'Rocky Linux 8' \
-        i 'Rocky Linux 9' \
-        j 'Ubuntu 20.04 LTS' \
-        k 'Ubuntu 22.04 LTS' \
-        l 'Ubuntu 23.04' 2>$tmpfile
+        g 'Rocky Linux 8' \
+        h 'Rocky Linux 9' \
+        i 'Ubuntu 20.04 LTS' \
+        j 'Ubuntu 22.04 LTS' \
+        k 'Ubuntu 23.04' 2>$tmpfile
     clear
 
     selection=$(cat $tmpfile)
@@ -163,27 +162,23 @@ selectdistro() {
         VM_PROVISION_BASEIMG=openSUSE-Leap-15.5-Minimal-VM.x86_64-Cloud.qcow2
         VM_PROVISION_BASEIMG_URL=https://download.opensuse.org/distribution/leap/15.5/appliances/$VM_PROVISION_BASEIMG
         ;;
-    g)  # openSUSE Tumbleweed
-        VM_PROVISION_BASEIMG=openSUSE-Tumbleweed-Minimal-VM.x86_64-Cloud.qcow2
-        VM_PROVISION_BASEIMG_URL=https://download.opensuse.org/tumbleweed/appliances/$VM_PROVISION_BASEIMG
-        ;;
-    h)  # Rocky Linux 8
+    g)  # Rocky Linux 8
         VM_PROVISION_BASEIMG=Rocky-8-GenericCloud.latest.x86_64.qcow2
         VM_PROVISION_BASEIMG_URL=http://dl.rockylinux.org/pub/rocky/8/images/x86_64/$VM_PROVISION_BASEIMG
         ;;
-    i)  # Rocky Linux 9
+    h)  # Rocky Linux 9
         VM_PROVISION_BASEIMG=Rocky-9-GenericCloud.latest.x86_64.qcow2
         VM_PROVISION_BASEIMG_URL=http://dl.rockylinux.org/pub/rocky/9/images/x86_64/$VM_PROVISION_BASEIMG
         ;;
-    j)  # Ubuntu 20.04 LTS
+    i)  # Ubuntu 20.04 LTS
         VM_PROVISION_BASEIMG=focal-server-cloudimg-amd64.img
         VM_PROVISION_BASEIMG_URL=https://cloud-images.ubuntu.com/focal/current/$VM_PROVISION_BASEIMG
         ;;
-    k)  # Ubuntu 22.04 LTS
+    j)  # Ubuntu 22.04 LTS
         VM_PROVISION_BASEIMG=jammy-server-cloudimg-amd64.img
         VM_PROVISION_BASEIMG_URL=https://cloud-images.ubuntu.com/jammy/current/$VM_PROVISION_BASEIMG
         ;;
-    l)  # Ubuntu 23.04
+    k)  # Ubuntu 23.04
         VM_PROVISION_BASEIMG=lunar-server-cloudimg-amd64.img
         VM_PROVISION_BASEIMG_URL=https://cloud-images.ubuntu.com/lunar/current/$VM_PROVISION_BASEIMG
         ;;
