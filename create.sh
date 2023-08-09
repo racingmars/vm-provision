@@ -628,6 +628,13 @@ __EOF__
     cat > "vms/$opt_hostname/start-$opt_hostname.sh" << __EOF__
 #!/bin/sh
 
+# Is the VM already running?
+if pgrep -f -- 'qemu.+-name $opt_hostname' > /dev/null 2> /dev/null; then
+    pid=\$(pgrep -f -- 'qemu.+-name $opt_hostname')
+    echo "ERROR: the VM appears to already be running (PID: \$pid)." 1>&2
+    exit 1
+fi
+
 # Check for presence of hard disk file as a sanity check
 if [ ! -f hd-$opt_hostname.img ]; then
     echo "ERROR: this start script must be run from the directory where" 1>&2
