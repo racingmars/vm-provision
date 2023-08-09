@@ -616,7 +616,7 @@ ethernets:
 __EOF__
 
     # Create the cloud-init.meta.cfg file
-    printf "instance-id: %s\n" > "vms/$opt_hostname/cloud-init.meta.cfg"
+    printf "instance-id: %s\n" "$uuid" > "vms/$opt_hostname/cloud-init.meta.cfg"
 
     # Create the cloud-init data disk image
     printf "Creating cloud-init disk at vms/%s/meta-%s.img...\n" \
