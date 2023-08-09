@@ -457,9 +457,9 @@ validateinput() {
         return
     fi
 
-    if ! echo -n "$opt_ip" | grep -E -q '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}(/[0-9]{1,2})?$'; then
+    if ! echo -n "$opt_ip" | grep -E -q '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/[0-9]{1,2}$'; then
         dialog --title "Validation Error" \
-            --msgbox "IP address must be an IPv4 address of the form '1.2.3.4' or '1.2.3.4/24'." \
+            --msgbox "IP address must be an IPv4 address with mask bits in the form '1.2.3.4/24'." \
             7 50
         return
     fi
