@@ -5,6 +5,9 @@ This is a simple tool that makes it easy to quickly create new Linux server VMs,
 
 The script will gather some basic details for the VM, download the requested Linux distribution if necessary, and create cloud-init metadata to configure the network and initial user. The VM will be ready to run with a startup script produced by this tool.
 
+[![Distribution selection](screenshots/page1-thumbnail.png?raw=true)](screenshots/page1.png?raw=true)
+[![VM options form](screenshots/page2-thumbnail.png?raw=true)](screenshots/page2.png?raw=true)
+
 Requirements
 ------------
 
