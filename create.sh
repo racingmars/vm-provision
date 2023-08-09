@@ -33,6 +33,7 @@ fatalerror() {
 # printerr is a utilty function to invoke printf with output redirected to
 # stderr.
 printerr() {
+    # shellcheck disable=SC2059
     printf "$@" 1>&2
 }
 
@@ -40,16 +41,16 @@ printerr() {
 # prints instructions to install the packagename $2 on debian, $3 on RHEL, and
 # $4 on Arch distribution types. Returns zero if found, non-zero otherwise.
 checkcommand() {
-    if command -v $1 > /dev/null 2>&1; then
+    if command -v "$1" > /dev/null 2>&1; then
         return 0
     fi
 
     # Command not found, print info
-    printerr "\nERROR: The command %s is required but not installed.\n" $1
+    printerr "\nERROR: The command %s is required but not installed.\n" "$1"
     printerr "Please use your package manager to install the package:\n"
-    printerr "  apt install %s\n" $2
-    printerr "  yum [or dnf] install %s\n" $3
-    printerr "  pacman -S %s\n" $4
+    printerr "  apt install %s\n" "$2"
+    printerr "  yum [or dnf] install %s\n" "$3"
+    printerr "  pacman -S %s\n" "$4"
 
     return 1
 }
@@ -57,7 +58,7 @@ checkcommand() {
 # checkhw confirms this is an x86_64 system with KVM enabled. If not, print
 # an error and exit.
 checkhw() {
-    if [ $(uname -m) != "x86_64" ]; then
+    if [ "$(uname -m)" != "x86_64" ]; then
         printerr "\nERROR: This script only supports x86_64 hardware.\n"
         fatalerror
     fi
@@ -74,26 +75,17 @@ checkhw() {
 checkprereqs() {
     needprereq=0
 
-    checkcommand curl curl curl curl
-    [ $? -ne 0 ] && needprereq=1
-
-    checkcommand dialog dialog dialog dialog
-    [ $? -ne 0 ] && needprereq=1
+    checkcommand curl curl curl curl || needprereq=1
+    checkcommand dialog dialog dialog dialog || needprereq=1
+    checkcommand hexdump bsdextrautils util-linux util-linux ||needprereq=1
+    checkcommand cloud-localds cloud-image-utils cloud-utils cloud-image-utils \
+        || needprereq=1
+    checkcommand qemu-img qemu-utils qemu-img qemu-img || needprereq=1
 
     # We only need uuidgen if the kernel doesn't give us UUIDs
     if [ ! -e /proc/sys/kernel/random/uuid ]; then
-        checkcommand uuidgen uuid-runtime util-linux util-linux
-        [ $? -ne 0 ] && needprereq=1
+        checkcommand uuidgen uuid-runtime util-linux util-linux || needprereq=1
     fi
-
-    checkcommand hexdump bsdextrautils util-linux util-linux
-    [ $? -ne 0 ] && needprereq=1
-
-    checkcommand cloud-localds cloud-image-utils cloud-utils cloud-image-utils
-    [ $? -ne 0 ] && needprereq=1
-
-    checkcommand qemu-img qemu-utils qemu-img qemu-img
-    [ $? -ne 0 ] && needprereq=1
 
     if [ $needprereq -ne 0 ]; then
         printerr "\nERROR: cannot continue until prerequisites are present.\n"
@@ -133,10 +125,10 @@ selectdistro() {
         i 'Rocky Linux 9' \
         j 'Ubuntu 20.04 LTS' \
         k 'Ubuntu 22.04 LTS' \
-        l 'Ubuntu 23.04' 2>$tmpfile
+        l 'Ubuntu 23.04' 2>"$tmpfile"
     clear
 
-    selection=$(cat $tmpfile)
+    selection=$(cat "$tmpfile")
     
     case "$selection" in
     a)  # AlmaLinux 8
@@ -202,8 +194,8 @@ downloadimage() {
     mkdir -p images
     if [ ! -f "images/$VM_PROVISION_BASEIMG" ]; then
         printf "\n\nDownloading %s...\n\n" "$VM_PROVISION_BASEIMG"
-        curl -L -o "images/$VM_PROVISION_BASEIMG" "$VM_PROVISION_BASEIMG_URL"
-        if [ $? -ne 0 ]; then
+        if ! curl -L -o "images/$VM_PROVISION_BASEIMG" \
+                "$VM_PROVISION_BASEIMG_URL"; then
             printerr "\n\nERROR: couldn't download %s from %s\n" \
                 "$VM_PROVISION_BASEIMG" "$VM_PROVISION_BASEIMG_URL"
             fatalerror
@@ -268,7 +260,7 @@ getprefs() {
     [ -z "$opt_pubkey" ] && opt_pubkey="$found_pubkey"
     [ -z "$opt_ram" ] && opt_ram=4096
     [ -z "$opt_disk" ] && opt_disk=16
-    [ -z "$opt_cpus" ] && cpus=1
+    [ -z "$opt_cpus" ] && opt_cpus=1
 }
 
 # overridedefaults replaces the default/preferences values with any
@@ -290,19 +282,19 @@ overridedefaults() {
 optionsform() {
     # If *all* options are present as environment variables, we don't display
     # the form. We will simulate the output of dialog.
-    if [ -n "$VM_PROVISION_HOSTNAME" -a -n "$VM_PROVISION_DOMAIN" \
-            -a -n "$VM_PROVISION_IP" -a -n "$VM_PROVISION_GW" \
-            -a -n "$VM_PROVISION_DNS" -a -n "$VM_PROVISION_BRIDGE" \
-            -a -n "$VM_PROVISION_USER" -a -n "$VM_PROVISION_PUBKEY" \
-            -a -n "$VM_PROVISION_RAM" -a -n "$VM_PROVISION_DISK" \
-            -a -n "$VM_PROVISION_CPUS" ]; then
+    if [ -n "$VM_PROVISION_HOSTNAME" ] && [ -n "$VM_PROVISION_DOMAIN" ] && \
+            [ -n "$VM_PROVISION_IP" ] && [ -n "$VM_PROVISION_GW" ] && \
+            [ -n "$VM_PROVISION_DNS" ] && [ -n "$VM_PROVISION_BRIDGE" ] && \
+            [ -n "$VM_PROVISION_USER" ] && [ -n "$VM_PROVISION_PUBKEY" ] && \
+            [ -n "$VM_PROVISION_RAM" ] && [ -n "$VM_PROVISION_DISK" ] && \
+            [ -n "$VM_PROVISION_CPUS" ]; then
 
         printf "%s^^%s^^%s^^%s^^%s^^%s^^%s^^%s^^%s^^%s^^%s^^" \
             "$VM_PROVISION_HOSTNAME" "$VM_PROVISION_DOMAIN" \
             "$VM_PROVISION_IP" "$VM_PROVISION_GW" "$VM_PROVISION_DNS" \
             "$VM_PROVISION_BRIDGE" "$VM_PROVISION_USER" \
             "$VM_PROVISION_PUBKEY" "$VM_PROVISION_RAM" \
-            "$VM_PROVISION_DISK" "$VM_PROVISION_CPUS" > $tmpfile
+            "$VM_PROVISION_DISK" "$VM_PROVISION_CPUS" > "$tmpfile"
 
         # Clear all of the environment-provided values so if there's a
         # validation error, and we re-prompt, we don't just create an infinite
@@ -337,10 +329,10 @@ optionsform() {
         "   RAM size (MB):" 9  2 "$opt_ram"      9  20  6  10 \
         "  Disk size (GB):" 10 2 "$opt_disk"     10 20  4  10 \
         "       # of CPUs:" 11 2 "$opt_cpus"     11 20  4  10 \
-        2>$tmpfile
+        2>"$tmpfile"
     clear
 
-    if [ -z "$(cat $tmpfile)" ]; then
+    if [ -z "$(cat "$tmpfile")" ]; then
         # User canceled form
         printerr "\n\nERROR: options form canceled.\n\n"
         fatalerror
@@ -431,11 +423,11 @@ validateinput() {
     [ -z "$opt_cpus" ] && required=BAD && \
         dialog --title "Validation Error" \
             --msgbox "The number of CPUs is required." 7 50
-    [ $required == BAD ] && return
+    [ $required = BAD ] && return
 
     # Now that we have confirmed all values are present, we'll check each one.
 
-    if ! echo -n "$opt_hostname" | grep -E -q '^[A-Za-z0-9][A-Za-z0-9\-]*$'; then
+    if ! printf "%s" "$opt_hostname" | grep -E -q '^[A-Za-z0-9][A-Za-z0-9\-]*$'; then
         dialog --title "Validation Error" \
             --msgbox "Hostname must consist only of letters, numbers, and the hyphen (-). A hostname may not start with a hyphen." \
             7 50
@@ -450,28 +442,28 @@ validateinput() {
         return
     fi
 
-    if ! echo -n "$opt_domain" | grep -E -q '^[A-Za-z0-9][A-Za-z0-9.-]*$'; then
+    if ! printf "%s" "$opt_domain" | grep -E -q '^[A-Za-z0-9][A-Za-z0-9.-]*$'; then
         dialog --title "Validation Error" \
             --msgbox "Domain name must consist only of letters, numbers, hyphens, and periods." \
             7 50
         return
     fi
 
-    if ! echo -n "$opt_ip" | grep -E -q '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/[0-9]{1,2}$'; then
+    if ! printf "%s" "$opt_ip" | grep -E -q '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/[0-9]{1,2}$'; then
         dialog --title "Validation Error" \
             --msgbox "IP address must be an IPv4 address with mask bits in the form '1.2.3.4/24'." \
             7 50
         return
     fi
 
-    if ! echo -n "$opt_gw" | grep -E -q '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$'; then
+    if ! printf "%s" "$opt_gw" | grep -E -q '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$'; then
         dialog --title "Validation Error" \
             --msgbox "Gateway address must be an IPv4 address of the form '1.2.3.4'." \
             7 50
         return
     fi
 
-    if ! echo -n "$opt_dns" | grep -E -q '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}( [0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})?$'; then
+    if ! printf "%s" "$opt_dns" | grep -E -q '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}( [0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})?$'; then
         dialog --title "Validation Error" \
             --msgbox "DNS servers must be a space-delimited list of IPv4 addresses" \
             7 50
@@ -481,7 +473,7 @@ validateinput() {
     # We'll assume bridge interface is correct, I'm not sure of the
     # requirements the kernel imposes on interface names.
 
-    if ! echo -n "$opt_user" | grep -E -q '^[a-zA-Z][a-zA-Z0-9-]*$'; then
+    if ! printf "%s" "$opt_user" | grep -E -q '^[a-zA-Z][a-zA-Z0-9-]*$'; then
         dialog --title "Validation Error" \
             --msgbox "Usernames may only contain letters, numbers, and the hyphen. Usernames may not start with a hypen or a number." \
             7 50
@@ -544,13 +536,12 @@ validateinput() {
 # a comma-separated list in the format for cloud-init and place it in
 # opt_dns_comma
 makednslist() {
-    opt_dns_comma=$(echo -n "$opt_dns" | sed 's/ /, /g')
+    opt_dns_comma=$(printf "%s" "$opt_dns" | sed 's/ /, /g')
 }
 
 # provision builds the VM based on all of the opt_* variables.
 provision() {
-    mkdir -p "vms/$opt_hostname"
-    if [ $? -ne 0 ]; then
+    if ! mkdir -p "vms/$opt_hostname"; then
         printerr "\nSomething went wrong creating vms/%s\n" "$opt_hostname"
         printerr "Aborting.\n"
         fatalerror
@@ -558,17 +549,16 @@ provision() {
 
     printf "\nCopying images/%s to vms/%s/hd-%s.img...\n" \
         "$VM_PROVISION_BASEIMG" "$opt_hostname" "$opt_hostname"
-    cp "images/$VM_PROVISION_BASEIMG" \
-        "vms/${opt_hostname}/hd-${opt_hostname}.img"
-    if [ $? -ne 0 ]; then
+    if ! cp "images/$VM_PROVISION_BASEIMG" \
+        "vms/${opt_hostname}/hd-${opt_hostname}.img"; then
         printerr "\nSomething went wrong copying the base image.\n"
         printerr "Aborting.\n"
         fatalerror
     fi
 
-    printf "Expanding disk image to %dG\n" $opt_disk
+    printf "Expanding disk image to %dG\n" "$opt_disk"
     qemu-img resize -f qcow2 "vms/${opt_hostname}/hd-${opt_hostname}.img" \
-        ${opt_disk}G
+        "${opt_disk}G"
 
     # Generate a UUID for the machine
     if [ -e /proc/sys/kernel/random/uuid ]; then
@@ -579,7 +569,7 @@ provision() {
 
     # Generate a valid unicast MAC address
     # https://stackoverflow.com/a/42661696/4472549
-    macaddress=$(hexdump -n 6 -ve '1/1 "%.2x "' /dev/random | awk -v a="2,6,a,e" -v r="$RANDOM" 'BEGIN{srand(r);}NR==1{split(a,b,",");r=int(rand()*4+1);printf "%s%s:%s:%s:%s:%s:%s\n",substr($1,0,1),b[r],$2,$3,$4,$5,$6}')
+    macaddress=$(hexdump -n 6 -ve '1/1 "%.2x "' /dev/random | awk -v a="2,6,a,e" -v r="$(date +%s%N)" 'BEGIN{srand(r);}NR==1{split(a,b,",");r=int(rand()*4+1);printf "%s%s:%s:%s:%s:%s:%s\n",substr($1,0,1),b[r],$2,$3,$4,$5,$6}')
 
     # Create the cloud-init.user.cfg file
     cat > "vms/$opt_hostname/cloud-init.user.cfg" << __EOF__
@@ -620,19 +610,19 @@ __EOF__
 
     # Create the cloud-init data disk image
     printf "Creating cloud-init disk at vms/%s/meta-%s.img...\n" \
-        $opt_hostname $opt_hostname
-    cloud-localds -v --network-config=vms/$opt_hostname/cloud-init.net.cfg \
-        vms/$opt_hostname/meta-$opt_hostname.img \
-        vms/$opt_hostname/cloud-init.user.cfg \
-        vms/$opt_hostname/cloud-init.meta.cfg
-    if [ $? -ne 0 ]; then
+        "$opt_hostname" "$opt_hostname"
+    if ! cloud-localds -v \
+        --network-config="vms/$opt_hostname/cloud-init.net.cfg" \
+        "vms/$opt_hostname/meta-$opt_hostname.img" \
+        "vms/$opt_hostname/cloud-init.user.cfg" \
+        "vms/$opt_hostname/cloud-init.meta.cfg"; then
         printerr "\nSomething went wrong creating the cloud-init disk.\n"
         printerr "Aborting.\n"
         fatalerror
     fi
 
     # We want to get the IP without the netmask, if present
-    connect_ip=$(echo $opt_ip | sed -E 's^([0-9.]+)(/.+)?$^\1^')
+    connect_ip=$(printf "%s" "$opt_ip" | sed -E 's^([0-9.]+)(/.+)?$^\1^')
 
     # Write the startup script
     cat > "vms/$opt_hostname/start-$opt_hostname.sh" << __EOF__
@@ -672,16 +662,16 @@ __EOF__
 # VM.
 printinstructions() {
     # We want to get the IP without the netmask, if present
-    connect_ip=$(echo $opt_ip | sed -E 's^([0-9.]+)(/.+)?$^\1^')
+    connect_ip=$(printf "%s" "$opt_ip" | sed -E 's^([0-9.]+)(/.+)?$^\1^')
 
-    printf "\n\n----------------------------------------------\n"
+    printf "\n\n-----------------------------------------------------------\n"
     printf "Your new VM is ready to go!\n\n"
     printf "cd vms/%s\n" "$opt_hostname"
     printf "Then start it with ./start-%s.sh\n\n" "$opt_hostname"
     printf "After the VM boots, you can connect with:\n"
     printf "  ssh %s@%s\n\n" "$opt_user" "$connect_ip"
-    printf "(If necessary, point to your SSH private key with -i)\n\n"
-    printf -- "----------------------------------------------\n"
+    printf "(If necessary, point to your SSH private key with -i)\n"
+    printf -- "-----------------------------------------------------------\n\n"
 }
 
 # saveprefs writes the final values to .prefs. We don't just copy tmpfile over
@@ -703,7 +693,7 @@ overridedefaults
 
 # Loop until we have valid options
 valid=NO
-while [ $valid == NO ]; do
+while [ $valid = NO ]; do
     optionsform
     loadoptions
     validateinput
@@ -716,4 +706,4 @@ printinstructions
 # After a successful run, save the answers as the starting point for next time
 # and clean up the tmpfile.
 saveprefs
-rm -f $tmpfile
+rm -f "$tmpfile"
