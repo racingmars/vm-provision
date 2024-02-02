@@ -25,7 +25,7 @@ Quick Start
  3. Run the create.sh script and answer the questions: `./create.sh`
  4. Change into the newly created VM directory, which is named with the hostname you provided: `cd vms/<hostname>`.
  5. Start the VM with the start script: `./start-<hostname>.sh`
- 6. After a few second, you should be able to ssh to VM using the username, IP address, and SSH key you configured during creation: `ssh -i <public_key_path> <username>@<ip_address>`
+ 6. After a few seconds, you should be able to ssh to the VM using the username, IP address, and SSH key you configured during creation: `ssh -i <public_key_path> <username>@<ip_address>`
 
 Networking -- what's this bridge interface thing?
 -------------------------------------------------
