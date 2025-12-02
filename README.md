@@ -1,9 +1,9 @@
 QEMU+KVM VM Provisioning
 ========================
 
-This is a simple tool that makes it easy to quickly create new Linux server VMs, running under QEMU+KVM, based on various Linux distribution cloud images. I use this for quick, usually throw-away VMs, when I need to test something in a clean environment, check how a particular different Linux distro does something, test a command or software without affecting my host system, etc.
+This is a simple tool that makes it easy to quickly create new Linux and FreeBSD server VMs, running under QEMU+KVM, based on various distribution cloud images. I use this for quick, usually throw-away VMs, when I need to test something in a clean environment, check how a particular different distro does something, test a command or software without affecting my host system, etc.
 
-The script will gather some basic details for the VM, download the requested Linux distribution if necessary, and create cloud-init metadata to configure the network and initial user. The VM will be ready to run with a startup script produced by this tool.
+The script will gather some basic details for the VM, download the requested distribution if necessary, and create cloud-init metadata to configure the network and initial user. The VM will be ready to run with a startup script produced by this tool.
 
 [![Distribution selection](screenshots/page1-thumbnail.png?raw=true)](screenshots/page1.png?raw=true)
 [![VM options form](screenshots/page2-thumbnail.png?raw=true)](screenshots/page2.png?raw=true)
@@ -165,3 +165,4 @@ This program is free software: you can redistribute it and/or modify it under th
 This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License along with this program.  If not, see <https://www.gnu.org/licenses/>.
+

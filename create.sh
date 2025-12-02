@@ -113,18 +113,19 @@ selectdistro() {
     fi
 
     dialog --title "Distribution Selection" \
-        --menu "Select a Linux distribution for the new VM:" 20 75 14 \
+        --menu "Select a Linux (or FreeBSD) distribution for the new VM:" 20 75 14 \
         a 'AlmaLinux 9' \
         b 'AlmaLinux 10' \
         c 'Arch Linux' \
         d 'Debian 12' \
         e 'Debian 13' \
         f 'Fedora 43' \
-        g 'openSUSE Leap 16.0' \
-        h 'Rocky Linux 9' \
-        i 'Rocky Linux 10' \
-        j 'Ubuntu 22.04 LTS' \
-        k 'Ubuntu 24.04 LTS' 2>"$tmpfile"
+        g 'FreeBSD 15.0' \
+        h 'openSUSE Leap 16.0' \
+        i 'Rocky Linux 9' \
+        j 'Rocky Linux 10' \
+        k 'Ubuntu 22.04 LTS' \
+        l 'Ubuntu 24.04 LTS' 2>"$tmpfile"
     clear
 
     selection=$(cat "$tmpfile")
@@ -154,23 +155,28 @@ selectdistro() {
         VM_PROVISION_BASEIMG=Fedora-Cloud-Base-Generic-43-1.6.x86_64.qcow2
         VM_PROVISION_BASEIMG_URL=https://download.fedoraproject.org/pub/fedora/linux/releases/43/Cloud/x86_64/images/$VM_PROVISION_BASEIMG
         ;;
-    g)  # openSUSE Leap 16.0
+    g)  # FreeBSD 15
+        VM_PROVISION_BASEIMG=FreeBSD-15.0-STABLE-amd64-BASIC-CLOUDINIT-ufs.qcow2
+        VM_PROVISION_BASEIMG_URL=https://download.freebsd.org/snapshots/VM-IMAGES/15.0-STABLE/amd64/Latest/$VM_PROVISION_BASEIMG.xz
+        VM_PROVISION_IS_FREEBSD=true
+        ;;
+    h)  # openSUSE Leap 16.0
         VM_PROVISION_BASEIMG=Leap-16.0-Minimal-VM.x86_64-Cloud.qcow2
         VM_PROVISION_BASEIMG_URL=https://download.opensuse.org/distribution/leap/16.0/appliances/$VM_PROVISION_BASEIMG
         ;;
-    h)  # Rocky Linux 9
+    i)  # Rocky Linux 9
         VM_PROVISION_BASEIMG=Rocky-9-GenericCloud-Base.latest.x86_64.qcow2
         VM_PROVISION_BASEIMG_URL=https://dl.rockylinux.org/pub/rocky/9/images/x86_64/$VM_PROVISION_BASEIMG
         ;;
-    i)  # Rocky Linux 10
+    j)  # Rocky Linux 10
         VM_PROVISION_BASEIMG=Rocky-10-GenericCloud-Base.latest.x86_64.qcow2
         VM_PROVISION_BASEIMG_URL=https://dl.rockylinux.org/pub/rocky/10/images/x86_64/$VM_PROVISION_BASEIMG
         ;;
-    j)  # Ubuntu 22.04 LTS
+    k)  # Ubuntu 22.04 LTS
         VM_PROVISION_BASEIMG=jammy-server-cloudimg-amd64.img
         VM_PROVISION_BASEIMG_URL=https://cloud-images.ubuntu.com/jammy/current/$VM_PROVISION_BASEIMG
         ;;
-    k)  # Ubuntu 24.04 LTS
+    l)  # Ubuntu 24.04 LTS
         VM_PROVISION_BASEIMG=noble-server-cloudimg-amd64.img
         VM_PROVISION_BASEIMG_URL=https://cloud-images.ubuntu.com/noble/current/$VM_PROVISION_BASEIMG
         ;;
@@ -189,12 +195,27 @@ downloadimage() {
     mkdir -p images
     if [ ! -f "images/$VM_PROVISION_BASEIMG" ]; then
         printf "\n\nDownloading %s...\n\n" "$VM_PROVISION_BASEIMG"
-        if ! curl -L -o "images/$VM_PROVISION_BASEIMG" \
+
+        case "$VM_PROVISION_BASEIMG_URL" in
+            *.xz)
+                suffix=".xz"
+                ;;
+            *)
+                suffix=""
+                ;;
+        esac
+
+        if ! curl -L -o "images/$VM_PROVISION_BASEIMG$suffix" \
                 "$VM_PROVISION_BASEIMG_URL"; then
             printerr "\n\nERROR: couldn't download %s from %s\n" \
                 "$VM_PROVISION_BASEIMG" "$VM_PROVISION_BASEIMG_URL"
             fatalerror
         fi
+        case "$VM_PROVISION_BASEIMG_URL" in
+            *.xz)
+                unxz -k images/"$VM_PROVISION_BASEIMG.xz"
+                ;;
+        esac
     fi
 }
 
@@ -567,6 +588,11 @@ provision() {
     macaddress=$(hexdump -n 6 -ve '1/1 "%.2x "' /dev/random | awk -v a="2,6,a,e" -v r="$(date +%s%N)" 'BEGIN{srand(r);}NR==1{split(a,b,",");r=int(rand()*4+1);printf "%s%s:%s:%s:%s:%s:%s\n",substr($1,0,1),b[r],$2,$3,$4,$5,$6}')
 
     # Create the cloud-init.user.cfg file
+    if [ -n "$VM_PROVISION_IS_FREEBSD" ]; then
+        user_shell="/bin/sh"
+    else
+        user_shell="/bin/bash"
+    fi
     cat > "vms/$opt_hostname/cloud-init.user.cfg" << __EOF__
 #cloud-config
 hostname: $opt_hostname
@@ -576,12 +602,20 @@ users:
   - name: $opt_user
     sudo: ALL=(ALL) NOPASSWD:ALL
     homedir: /home/$opt_user
-    shell: /bin/bash
+    shell: $user_shell
     lock_passwd: true
-    ssh-authorized-keys:
+    ssh_authorized_keys:
       - $(head -n 1 "$opt_pubkey")
 ssh_pwauth: false
 __EOF__
+
+    if [ -n "$VM_PROVISION_IS_FREEBSD" ]; then
+        cat >> "vms/$opt_hostname/cloud-init.user.cfg" << __EOF__
+packages:
+  - sudo
+package_update: true
+__EOF__
+    fi
 
     # Create the cloud-init.net.cfg file
     cat > "vms/$opt_hostname/cloud-init.net.cfg" << __EOF__
