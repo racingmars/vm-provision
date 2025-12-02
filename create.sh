@@ -114,70 +114,65 @@ selectdistro() {
 
     dialog --title "Distribution Selection" \
         --menu "Select a Linux distribution for the new VM:" 20 75 14 \
-        a 'AlmaLinux 8' \
-        b 'AlmaLinux 9' \
+        a 'AlmaLinux 9' \
+        b 'AlmaLinux 10' \
         c 'Arch Linux' \
-        d 'Debian 11' \
-        e 'Debian 12' \
-        f 'Fedora 38' \
-        g 'openSUSE Leap 15.5' \
-        h 'Rocky Linux 8' \
-        i 'Rocky Linux 9' \
-        j 'Ubuntu 20.04 LTS' \
-        k 'Ubuntu 22.04 LTS' \
-        l 'Ubuntu 23.04' 2>"$tmpfile"
+        d 'Debian 12' \
+        e 'Debian 13' \
+        f 'Fedora 43' \
+        g 'openSUSE Leap 16.0' \
+        h 'Rocky Linux 9' \
+        i 'Rocky Linux 10' \
+        j 'Ubuntu 22.04 LTS' \
+        k 'Ubuntu 24.04 LTS' 2>"$tmpfile"
     clear
 
     selection=$(cat "$tmpfile")
     
     case "$selection" in
-    a)  # AlmaLinux 8
-        VM_PROVISION_BASEIMG=AlmaLinux-8-GenericCloud-latest.x86_64.qcow2
-        VM_PROVISION_BASEIMG_URL=https://repo.almalinux.org/almalinux/8/cloud/x86_64/images/$VM_PROVISION_BASEIMG
-        ;;
-    b)  # AlmaLinux 9
+    a)  # AlmaLinux 9
         VM_PROVISION_BASEIMG=AlmaLinux-9-GenericCloud-latest.x86_64.qcow2
         VM_PROVISION_BASEIMG_URL=https://repo.almalinux.org/almalinux/9/cloud/x86_64/images/$VM_PROVISION_BASEIMG
+        ;;
+    b)  # AlmaLinux 10
+        VM_PROVISION_BASEIMG=AlmaLinux-10-GenericCloud-latest.x86_64.qcow2
+        VM_PROVISION_BASEIMG_URL=https://repo.almalinux.org/almalinux/10/cloud/x86_64/images/$VM_PROVISION_BASEIMG
         ;;
     c)  # Arch Linux
         VM_PROVISION_BASEIMG=Arch-Linux-x86_64-cloudimg.qcow2
         VM_PROVISION_BASEIMG_URL=https://geo.mirror.pkgbuild.com/images/latest/$VM_PROVISION_BASEIMG
         ;;
-    d)  # Debian 11
-        VM_PROVISION_BASEIMG=debian-11-genericcloud-amd64.qcow2
-        VM_PROVISION_BASEIMG_URL=https://cloud.debian.org/images/cloud/bullseye/latest/$VM_PROVISION_BASEIMG
-        ;;
-    e)  # Debian 12
+    d)  # Debian 12
         VM_PROVISION_BASEIMG=debian-12-genericcloud-amd64.qcow2
         VM_PROVISION_BASEIMG_URL=https://cloud.debian.org/images/cloud/bookworm/latest/$VM_PROVISION_BASEIMG
         ;;
-    f)  # Fedora 38
-        VM_PROVISION_BASEIMG=Fedora-Cloud-Base-38-1.6.x86_64.qcow2
-        VM_PROVISION_BASEIMG_URL=https://download.fedoraproject.org/pub/fedora/linux/releases/38/Cloud/x86_64/images/$VM_PROVISION_BASEIMG
+    e)  # Debian 13
+        VM_PROVISION_BASEIMG=debian-13-genericcloud-amd64.qcow2
+        VM_PROVISION_BASEIMG_URL=https://cloud.debian.org/images/cloud/trixie/latest/$VM_PROVISION_BASEIMG
         ;;
-    g)  # openSUSE Leap 15.5
-        VM_PROVISION_BASEIMG=openSUSE-Leap-15.5-Minimal-VM.x86_64-Cloud.qcow2
-        VM_PROVISION_BASEIMG_URL=https://download.opensuse.org/distribution/leap/15.5/appliances/$VM_PROVISION_BASEIMG
+    f)  # Fedora 43
+        VM_PROVISION_BASEIMG=Fedora-Cloud-Base-Generic-43-1.6.x86_64.qcow2
+        VM_PROVISION_BASEIMG_URL=https://download.fedoraproject.org/pub/fedora/linux/releases/43/Cloud/x86_64/images/$VM_PROVISION_BASEIMG
         ;;
-    h)  # Rocky Linux 8
-        VM_PROVISION_BASEIMG=Rocky-8-GenericCloud.latest.x86_64.qcow2
-        VM_PROVISION_BASEIMG_URL=http://dl.rockylinux.org/pub/rocky/8/images/x86_64/$VM_PROVISION_BASEIMG
+    g)  # openSUSE Leap 16.0
+        VM_PROVISION_BASEIMG=Leap-16.0-Minimal-VM.x86_64-Cloud.qcow2
+        VM_PROVISION_BASEIMG_URL=https://download.opensuse.org/distribution/leap/16.0/appliances/$VM_PROVISION_BASEIMG
         ;;
-    i)  # Rocky Linux 9
-        VM_PROVISION_BASEIMG=Rocky-9-GenericCloud.latest.x86_64.qcow2
-        VM_PROVISION_BASEIMG_URL=http://dl.rockylinux.org/stg/rocky/9/images/x86_64/$VM_PROVISION_BASEIMG
+    h)  # Rocky Linux 9
+        VM_PROVISION_BASEIMG=Rocky-9-GenericCloud-Base.latest.x86_64.qcow2
+        VM_PROVISION_BASEIMG_URL=https://dl.rockylinux.org/pub/rocky/9/images/x86_64/$VM_PROVISION_BASEIMG
         ;;
-    j)  # Ubuntu 20.04 LTS
-        VM_PROVISION_BASEIMG=focal-server-cloudimg-amd64.img
-        VM_PROVISION_BASEIMG_URL=https://cloud-images.ubuntu.com/focal/current/$VM_PROVISION_BASEIMG
+    i)  # Rocky Linux 10
+        VM_PROVISION_BASEIMG=Rocky-10-GenericCloud-Base.latest.x86_64.qcow2
+        VM_PROVISION_BASEIMG_URL=https://dl.rockylinux.org/pub/rocky/10/images/x86_64/$VM_PROVISION_BASEIMG
         ;;
-    k)  # Ubuntu 22.04 LTS
+    j)  # Ubuntu 22.04 LTS
         VM_PROVISION_BASEIMG=jammy-server-cloudimg-amd64.img
         VM_PROVISION_BASEIMG_URL=https://cloud-images.ubuntu.com/jammy/current/$VM_PROVISION_BASEIMG
         ;;
-    l)  # Ubuntu 23.04
-        VM_PROVISION_BASEIMG=lunar-server-cloudimg-amd64.img
-        VM_PROVISION_BASEIMG_URL=https://cloud-images.ubuntu.com/lunar/current/$VM_PROVISION_BASEIMG
+    k)  # Ubuntu 24.04 LTS
+        VM_PROVISION_BASEIMG=noble-server-cloudimg-amd64.img
+        VM_PROVISION_BASEIMG_URL=https://cloud-images.ubuntu.com/noble/current/$VM_PROVISION_BASEIMG
         ;;
     *)
         # User canceled menu selection
